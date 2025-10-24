@@ -1,0 +1,15 @@
+# 1. Obtener todos los productos
+GET http://localhost:8080/api/products
+
+###
+
+# 3. Agregar una película:
+POST http://localhost:8080/api/products
+Content-Type: application/json
+
+{
+  "name": "Iphone 17",
+  "description": "cellphone from apple",
+  "price": 999.99,
+  "quantity": 150
+}
