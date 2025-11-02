@@ -1,0 +1,24 @@
+services:
+  backend-catalogo:
+    build: ./backend-catalogo
+    ports:
+      - "8080:8080"
+    volumes:
+      - catalogo_data:/data
+    networks:
+      - appnet
+
+  frontend-catalogo:
+    build: ./frontend-catalogo
+    ports:
+      - "4200:80"
+    depends_on:
+      - backend-catalogo
+    networks:
+      - appnet
+
+volumes:
+  catalogo_data:
+
+networks:
+  appnet:
