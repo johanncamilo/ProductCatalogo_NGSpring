@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -13,6 +14,7 @@ import com.belos.backend_catalogo.model.Product;
 import com.belos.backend_catalogo.repository.ProductRepository;
 
 @RestController
+@CrossOrigin("*")
 public class ProductController {
 
     @Autowired

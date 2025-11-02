@@ -7,8 +7,8 @@ Esta guía te mostrará cómo crear desde cero esta aplicación CRUD de producto
 ## 1. Crear el proyecto Angular
 
 ```sh
-ng new simple-products-frontend --style=scss --routing
-cd simple-products-frontend
+ng new frontend-catalogo --style=scss --routing
+cd frontend-catalogo
 ```
 
 Esto crea la estructura base del proyecto, usando SCSS para estilos y habilitando el sistema de rutas.

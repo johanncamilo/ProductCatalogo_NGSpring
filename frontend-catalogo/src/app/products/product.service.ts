@@ -9,7 +9,7 @@ import { Observable, of, throwError } from 'rxjs';
 export class ProductService {
 
   private apiUrl = 'http://localhost:8080/api/products';
-  private mocked = true; // Cambiar a false para usar el backend
+  private mocked = false; // Cambiar a false para usar el backend
 
   // Datos mock para usar antes de conectar el backend (opcional, útil para probar la UI)
   private mockProducts: Product[] = [
