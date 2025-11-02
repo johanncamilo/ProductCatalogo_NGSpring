@@ -1,1 +1,87 @@
+.DS_Store
+Thumbs.db
 .vscode/
+.idea/
+*.swp
+*.swo
+
+# Java / Maven
+target/
+*.log
+dependency-reduced-pom.xml
+release.properties
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+.mvn/wrapper/maven-wrapper.jar
+
+# Archivos generados por IDEs Java
+*.class
+*.jar
+*.war
+*.ear
+*.iml
+/.classpath
+/.project
+/.settings/
+
+# Archivos específicos del backend (Spring)
+backend-catalogo/target/
+backend-catalogo/.mvn/wrapper/maven-wrapper.jar
+backend-catalogo/*.log
+backend-catalogo/.idea/
+backend-catalogo/*.iml
+
+# Microservicio usuarios
+microservicio-usuarios/target/
+microservicio-usuarios/.mvn/wrapper/maven-wrapper.jar
+microservicio-usuarios/*.log
+microservicio-usuarios/.idea/
+microservicio-usuarios/*.iml
+
+# Node / Angular (frontend-catalogo)
+frontend-catalogo/node_modules/
+frontend-catalogo/dist/
+frontend-catalogo/.angular/
+frontend-catalogo/.sass-cache/
+frontend-catalogo/.env
+frontend-catalogo/npm-debug.log*
+frontend-catalogo/yarn-error.log
+frontend-catalogo/.ng_build_cache
+
+# Logs y bases de datos temporales
+*.log
+*.sql
+*.sqlite
+db/*.db
+**/db/*.db
+
+# Archivos de entorno y secretos
+.env
+*.env
+.env.local
+.env.*.local
+secrets/
+*.p12
+*.jks
+
+# Sistema de compilación y paquetes
+build/
+out/
+tmp/
+temp/
+
+# Macros y binarios
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Archivos y carpetas de recursos temporales
+*.tmp
+*.temp
+~$*
+*.bak
+
+# Otros
+coverage/

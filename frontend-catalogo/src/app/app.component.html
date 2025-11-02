@@ -1,0 +1,14 @@
+<mat-toolbar color="primary">
+  <span>{{ title }}</span>
+  <span class="spacer"></span>
+  <button mat-button routerLink="/products">
+    <mat-icon>list</mat-icon>
+    Productos
+  </button>
+  <button mat-button routerLink="/products/new">
+    <mat-icon>add</mat-icon>
+    Nuevo
+  </button>
+</mat-toolbar>
+
+<router-outlet />
