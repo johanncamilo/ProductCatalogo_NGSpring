@@ -1,25 +1,38 @@
-services: 
-backend-catalogo: 
-build: ./backend-catalogo 
-ports: 
-- "8080:8080" 
-volumes: 
-- catalogo_data:/data 
-networks: 
-- appnet 
- 
-frontend-catalogo: 
-build: ./frontend-catalogo 
-ports: 
-- "4200:80" 
-depends_on: 
-- backend-catalogo 
-networks: 
-- appnet 
- 
-volumes: 
-catalogo_data: 
- 
-networks: 
-appnet: 
-  driver: bridge 
+
+services:
+  backend-catalogo:
+    build: ./backend-catalogo
+    ports:
+      - "8080:8080"
+    volumes:
+      - catalogo_data:/data
+    networks:
+      - appnet
+
+  frontend-catalogo:
+    build: ./frontend-catalogo
+    ports:
+      - "4200:80"
+    depends_on:
+      - backend-catalogo
+    networks:
+      - appnet
+
+  jenkins:
+    image: jenkins/jenkins:lts
+    container_name: jenkins
+    ports:
+      - 8081:8080
+    volumes:
+      - jenkins_home:/var/jenkins_home
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - appnet
+
+volumes:
+  catalogo_data:
+  jenkins_home:
+
+networks:
+  appnet:
+    driver: bridge
