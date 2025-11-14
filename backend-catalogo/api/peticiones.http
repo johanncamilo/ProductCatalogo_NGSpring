@@ -3,7 +3,7 @@ GET http://localhost:8080/api/products
 
 ###
 
-# 3. Agregar una película:
+# 3. Agregar un nuevo producto:
 POST http://localhost:8080/api/products
 Content-Type: application/json
 
@@ -13,3 +13,28 @@ Content-Type: application/json
   "price": 999.99,
   "quantity": 150
 }
+
+###
+POST http://localhost:8080/api/products
+Content-Type: application/json
+
+{
+  "name": "macbook pro",
+  "description": "Apple laptop",
+  "price": 2500,
+  "quantity": 75
+}
+
+###
+
+POST http://localhost:8080/api/products
+Content-Type: application/json
+
+{
+  "name": "nvidia rtx 4090",
+  "description": "high-end graphics card",
+  "price": 1600,
+  "quantity": 100
+}
+
+###
