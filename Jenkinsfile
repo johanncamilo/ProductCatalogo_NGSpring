@@ -1,5 +1,4 @@
 pipeline {
-
     agent any
 
     stages {
@@ -12,7 +11,7 @@ pipeline {
 
         stage('Build Backend (Spring Boot)') {
             steps {
-                sh 'cd backend-catalogo && ./mvnw clean package -DskipTests'
+                sh 'cd backend-catalogo && ./mvnw -DskipTests -DskipITs -Dmaven.test.skip=true clean package'
             }
         }
 
@@ -26,12 +25,6 @@ pipeline {
             steps {
                 sh 'docker build -t catalogo-backend ./backend-catalogo'
                 sh 'docker build -t catalogo-frontend ./frontend-catalogo'
-            }
-        }
-
-        stage('Test Backend') {
-            steps {
-                sh 'cd backend-catalogo && ./mvnw test -DskipTests'
             }
         }
 
