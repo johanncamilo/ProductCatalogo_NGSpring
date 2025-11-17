@@ -2,24 +2,20 @@ FROM jenkins/jenkins:lts
 
 USER root
 
-# Install Git, Node & Angular
+# Install Git, Node, Angular
 RUN apt-get update && \
     apt-get install -y git curl && \
     curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
     apt-get install -y nodejs && \
     npm install -g @angular/cli
 
-# Install Docker CLI inside Jenkins container
+# ---- Install ONLY Docker CLI (NO docker engine) ----
 RUN apt-get update && \
-    apt-get install -y \
-        ca-certificates \
-        curl \
-        gnupg \
-        lsb-release && \
+    apt-get install -y ca-certificates curl gnupg lsb-release && \
     mkdir -p /etc/apt/keyrings && \
     curl -fsSL https://download.docker.com/linux/debian/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg && \
     echo \
-      "deb [arch=amd64 signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/debian \
+      "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/debian \
       $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null && \
     apt-get update && \
     apt-get install -y docker-ce-cli
