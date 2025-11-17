@@ -2,9 +2,11 @@ FROM jenkins/jenkins:lts
 
 USER root
 
+# Install Git
 # Install Node and Angular
+
 RUN apt-get update && \
-    apt-get install -y curl && \
+    apt-get install -y git curl && \
     curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
     apt-get install -y nodejs && \
     npm install -g @angular/cli
