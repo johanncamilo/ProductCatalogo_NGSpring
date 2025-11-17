@@ -12,7 +12,7 @@ pipeline {
 
         stage('Build Backend (Spring Boot)') {
             steps {
-                sh 'cd backend-catalogo && ./mvnw clean package -DskipTests'
+                sh 'cd backend-catalogo && ./mvnw clean package -Dmaven.test.skip=true'
             }
         }
 
