@@ -1,4 +1,5 @@
 pipeline {
+
     agent any
 
     stages {
@@ -11,7 +12,7 @@ pipeline {
 
         stage('Build Backend (Spring Boot)') {
             steps {
-                sh 'cd backend-catalogo && ./mvnw -DskipTests -DskipITs -Dmaven.test.skip=true clean package'
+                sh 'cd backend-catalogo && ./mvnw clean package -DskipTests'
             }
         }
 
@@ -30,8 +31,8 @@ pipeline {
 
         stage('Deploy Local (Docker Compose)') {
             steps {
-                sh 'docker compose -f docker-compose.yml down'
-                sh 'docker compose -f docker-compose.yml up -d --build'
+                sh 'docker compose down'
+                sh 'docker compose up -d --build'
             }
         }
 
