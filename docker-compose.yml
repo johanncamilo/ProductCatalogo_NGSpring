@@ -17,22 +17,8 @@ services:
     networks:
       - appnet
 
-  jenkins:
-    build:
-      context: .
-      dockerfile: Dockerfile.jenkins
-    user: root
-    ports:
-      - "8085:8080"
-    volumes:
-      - jenkins_home:/var/jenkins_home
-      - /var/run/docker.sock:/var/run/docker.sock
-    networks:
-      - appnet
-
 volumes:
   catalogo_data:
-  jenkins_home:
 
 networks:
   appnet:
