@@ -36,13 +36,7 @@ pipeline {
             }
         }
 
-        stage('Notify') {
-            steps {
-                mail to: 'jsborbon@poligran.edu.co',
-                     subject: "Pipeline completado: ${env.JOB_NAME}",
-                     body: "El pipeline ${env.JOB_NAME} finalizó con estado ${currentBuild.currentResult}."
-            }
-        }
+       
     }
 
     post {
