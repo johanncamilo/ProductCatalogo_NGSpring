@@ -1,6 +1,7 @@
 services:
   mysql:
     image: mysql:8
+    platform: linux/amd64
     container_name: mysql
     environment:
       MYSQL_ROOT_PASSWORD: 12345678
@@ -19,7 +20,9 @@ services:
       start_period: 10s
 
   backend-catalogo:
-    build: ./backend-catalogo
+    platform: linux/amd64
+    build:
+      context: ./backend-catalogo
     depends_on:
       mysql:
         condition: service_healthy
@@ -33,7 +36,9 @@ services:
       - appnet
 
   frontend-catalogo:
-    build: ./frontend-catalogo
+    platform: linux/amd64
+    build:
+      context: ./frontend-catalogo
     ports:
       - "8082:80"
     depends_on:
@@ -43,6 +48,7 @@ services:
 
   jenkins:
     image: jenkins/jenkins:lts
+    platform: linux/amd64
     container_name: jenkins
     user: root
     ports:
@@ -63,6 +69,7 @@ services:
 
   sonarqube:
     image: sonarqube:latest
+    platform: linux/amd64
     container_name: sonarqube
     ports:
       - "9000:9000"
