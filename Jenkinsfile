@@ -3,7 +3,6 @@ pipeline {
 
 	tools {
 		maven "Default"
-		sonarScanner "SonarScanner"
 	}
 
 	environment {
@@ -47,7 +46,7 @@ pipeline {
 			}
 		}
 
-		/* ------------------------- SONARQUBE ------------------------- */
+		/* ------------------------- SONARQUBE (Java + Angular) ------------------------- */
 		stage('SonarQube Analysis') {
 			steps {
 				withSonarQubeEnv('SonarServer') {
@@ -55,12 +54,21 @@ pipeline {
                         sonar-scanner \
                           -Dsonar.projectKey=ProductCatalogo \
                           -Dsonar.projectName=ProductCatalogo \
-                          -Dsonar.sources=$BACKEND_DIR/src/main/java \
+
+                          # BACKEND
+                          -Dsonar.sources=$BACKEND_DIR/src/main/java,$FRONTEND_DIR/src \
                           -Dsonar.tests=$BACKEND_DIR/src/test/java \
                           -Dsonar.java.binaries=$BACKEND_DIR/target/classes \
                           -Dsonar.junit.reportPaths=$BACKEND_DIR/target/surefire-reports \
                           -Dsonar.jacoco.reportPaths=$BACKEND_DIR/target/jacoco.exec \
                           -Dsonar.coverage.jacoco.xmlReportPaths=$BACKEND_DIR/target/site/jacoco/jacoco.xml \
+
+                          # FRONTEND
+                          -Dsonar.inclusions=**/*.java,**/*.ts,**/*.html,**/*.css \
+                          -Dsonar.exclusions=**/node_modules/**,**/*.spec.ts \
+                          -Dsonar.javascript.lcov.reportPaths=$FRONTEND_DIR/coverage/lcov.info \
+
+                          # SONAR SERVER
                           -Dsonar.host.url=\$SONAR_HOST_URL \
                           -Dsonar.login=\$SONAR_AUTH_TOKEN
                     """
@@ -92,12 +100,12 @@ pipeline {
 			}
 		}
 
-		/* ------------------------- BUILD FRONTEND ------------------------- */
+		/* ------------------------- BUILD FRONTEND (Angular) ------------------------- */
 		stage('Build Frontend (Angular)') {
 			agent {
 				docker {
 					image 'node:18'
-					args '-u root:root'  // evita errores de permisos al escribir en workspace
+					args '-u root:root'   // evita errores de permisos en Jenkins
 				}
 			}
 			steps {
