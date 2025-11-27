@@ -64,6 +64,7 @@ services:
         apt-get install -y curl &&
         curl -fsSL https://deb.nodesource.com/setup_18.x | bash - &&
         apt-get install -y nodejs &&
+        apt-get install -y docker.io &&
         exec /usr/local/bin/jenkins.sh
       "
 
