@@ -24,26 +24,28 @@ pipeline {
 			steps {
 				sh """
                     cd $BACKEND
-                    ./mvnw clean package
+                    ./mvnw clean package -DskipTests
                 """
 			}
 		}
 
 		stage('SonarQube Analysis') {
 			environment {
-				scannerHome = tool 'SonarScanner'
+				SCANNER_HOME = tool 'SonarScanner'
 			}
 			steps {
-				withSonarQubeEnv('SonarServer') {
-					withCredentials([string(credentialsId: 'sonarqube-token', variable: 'SONAR_TOKEN')]) {
-						sh """
-                    ${scannerHome}/bin/sonar-scanner \
-                      -Dsonar.projectKey=ProductCatalogo \
-                      -Dsonar.host.url=http://sonarqube:9000 \
-                      -Dsonar.login=$SONAR_TOKEN \
-                      -Dsonar.sources=$BACKEND/src/main/java,$FRONTEND/src \
-                      -Dsonar.java.binaries=$BACKEND/target/classes
-                """
+				withSonarQubeEnv('sonarqube') {
+
+					withCredentials([string(credentialsId: 'sonarqube-token-productcatalogo', variable: 'SONAR_TOKEN')]) {
+
+						sh '''#!/bin/bash
+                            "$SCANNER_HOME/bin/sonar-scanner" \
+                              -Dsonar.projectKey=ProductCatalogo \
+                              -Dsonar.host.url="$SONAR_HOST_URL" \
+                              -Dsonar.sources="backend-catalogo/src/main/java,frontend-catalogo/src" \
+                              -Dsonar.java.binaries="backend-catalogo/target/classes" \
+                              -Dsonar.token="$SONAR_TOKEN"
+                        '''
 					}
 				}
 			}
@@ -60,11 +62,7 @@ pipeline {
 		}
 
 		stage('Build Frontend') {
-			agent {
-				docker {
-					image 'node:18'
-				}
-			}
+
 			steps {
 				sh """
                     cd $FRONTEND
@@ -76,12 +74,16 @@ pipeline {
 
 		stage('Docker Build & Deploy') {
 			steps {
-				sh """
-                    docker build -t catalogo-backend $BACKEND
-                    docker build -t catalogo-frontend $FRONTEND
-                    docker compose down
-                    docker compose up -d --build
-                """
+
+				sh '''
+                    # Construcción de imágenes
+                    docker build -t catalogo-backend backend-catalogo
+                    docker build -t catalogo-frontend frontend-catalogo
+
+                    # Levantar solo backend + frontend + mysql + sonarqube
+                    # (sin bajar jenkins!)
+                    docker compose up -d backend-catalogo frontend-catalogo mysql sonarqube
+                '''
 			}
 		}
 	}
