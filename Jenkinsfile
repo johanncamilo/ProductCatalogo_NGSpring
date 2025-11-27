@@ -105,7 +105,7 @@ pipeline {
 			agent {
 				docker {
 					image 'node:18'
-					args '-u root:root'   // evita errores de permisos en Jenkins
+					args '-u root:root'
 				}
 			}
 			steps {
