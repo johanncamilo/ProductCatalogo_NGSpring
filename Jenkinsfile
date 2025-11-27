@@ -34,15 +34,17 @@ pipeline {
 				scannerHome = tool 'SonarScanner'
 			}
 			steps {
-				withCredentials([string(credentialsId: 'sonarqube-token', variable: 'SONAR_TOKEN')]) {
-					sh """
-                ${scannerHome}/bin/sonar-scanner \
-                  -Dsonar.projectKey=ProductCatalogo \
-                  -Dsonar.host.url=http://sonarqube:9000 \
-                  -Dsonar.login=$SONAR_TOKEN \
-                  -Dsonar.sources=$BACKEND/src/main/java,$FRONTEND/src \
-                  -Dsonar.java.binaries=$BACKEND/target/classes
-            """
+				withSonarQubeEnv('SonarServer') {
+					withCredentials([string(credentialsId: 'sonarqube-token', variable: 'SONAR_TOKEN')]) {
+						sh """
+                    ${scannerHome}/bin/sonar-scanner \
+                      -Dsonar.projectKey=ProductCatalogo \
+                      -Dsonar.host.url=http://sonarqube:9000 \
+                      -Dsonar.login=$SONAR_TOKEN \
+                      -Dsonar.sources=$BACKEND/src/main/java,$FRONTEND/src \
+                      -Dsonar.java.binaries=$BACKEND/target/classes
+                """
+					}
 				}
 			}
 		}
