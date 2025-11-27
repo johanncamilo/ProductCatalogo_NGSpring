@@ -40,8 +40,8 @@ pipeline {
                   -Dsonar.projectKey=ProductCatalogo \
                   -Dsonar.host.url=http://sonarqube:9000 \
                   -Dsonar.login=$SONAR_TOKEN \
-                  -Dsonar.sources=$BACKEND_DIR/src/main/java,$FRONTEND_DIR/src \
-                  -Dsonar.java.binaries=$BACKEND_DIR/target/classes
+                  -Dsonar.sources=$BACKEND/src/main/java,$FRONTEND/src \
+                  -Dsonar.java.binaries=$BACKEND/target/classes
             """
 				}
 			}
