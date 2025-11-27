@@ -26,7 +26,7 @@ pipeline {
 			steps {
 				sh """
                     cd $BACKEND_DIR
-                    ./mvnw clean package -Dmaven.test.skip=true
+                    ./mvnw clean compile
                 """
 			}
 		}
@@ -43,6 +43,16 @@ pipeline {
 				always {
 					junit "$BACKEND_DIR/target/surefire-reports/*.xml"
 				}
+			}
+		}
+
+		/* ------------------------- PACKAGE ------------------------- */
+		stage('Package Backend') {
+			steps {
+				sh """
+                    cd $BACKEND_DIR
+                    ./mvnw package -DskipTests
+                """
 			}
 		}
 
