@@ -34,7 +34,7 @@ pipeline {
 				SCANNER_HOME = tool 'SonarScanner'
 			}
 			steps {
-				withSonarQubeEnv('sonarqube') {
+				withSonarQubeEnv('SonarServer') {
 
 					withCredentials([string(credentialsId: 'sonarqube-token-productcatalogo', variable: 'SONAR_TOKEN')]) {
 
