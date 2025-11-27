@@ -2,7 +2,6 @@ pipeline {
 	agent any
 
 	tools {
-		nodejs "node18"
 		maven "Default"
 		sonarScanner "SonarScanner"
 	}
@@ -95,6 +94,12 @@ pipeline {
 
 		/* ------------------------- BUILD FRONTEND ------------------------- */
 		stage('Build Frontend (Angular)') {
+			agent {
+				docker {
+					image 'node:18'
+					args '-u root:root'  // evita errores de permisos al escribir en workspace
+				}
+			}
 			steps {
 				sh """
                     cd $FRONTEND_DIR
