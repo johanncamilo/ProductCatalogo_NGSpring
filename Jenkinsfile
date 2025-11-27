@@ -54,19 +54,20 @@ pipeline {
 			steps {
 				withSonarQubeEnv('SonarServer') {
 					sh """
-                        ${scannerHome}/bin/sonar-scanner \
-                          -Dsonar.projectKey=ProductCatalogo \
-                          -Dsonar.projectName=ProductCatalogo \
-                          -Dsonar.sources=$BACKEND_DIR/src/main/java,$FRONTEND_DIR/src \
-                          -Dsonar.tests=$BACKEND_DIR/src/test/java \
-                          -Dsonar.java.binaries=$BACKEND_DIR/target/classes \
-                          -Dsonar.junit.reportPaths=$BACKEND_DIR/target/surefire-reports \
-                          -Dsonar.jacoco.reportPaths=$BACKEND_DIR/target/jacoco.exec \
-                          -Dsonar.coverage.jacoco.xmlReportPaths=$BACKEND_DIR/target/site/jacoco/jacoco.xml \
-                          -Dsonar.inclusions=**/*.java,**/*.ts,**/*.html,**/*.css \
-                          -Dsonar.exclusions=**/node_modules/**,**/*.spec.ts \
-                          -Dsonar.javascript.lcov.reportPaths=$FRONTEND_DIR/coverage/lcov.info
-                    """
+                ${scannerHome}/bin/sonar-scanner \
+                  -Dsonar.projectKey=ProductCatalogo \
+                  -Dsonar.projectName=ProductCatalogo \
+                  -Dsonar.host.url=http://sonarqube:9000 \
+                  -Dsonar.sources=$BACKEND_DIR/src/main/java,$FRONTEND_DIR/src \
+                  -Dsonar.tests=$BACKEND_DIR/src/test/java \
+                  -Dsonar.java.binaries=$BACKEND_DIR/target/classes \
+                  -Dsonar.junit.reportPaths=$BACKEND_DIR/target/surefire-reports \
+                  -Dsonar.jacoco.reportPaths=$BACKEND_DIR/target/jacoco.exec \
+                  -Dsonar.coverage.jacoco.xmlReportPaths=$BACKEND_DIR/target/site/jacoco/jacoco.xml \
+                  -Dsonar.inclusions=**/*.java,**/*.ts,**/*.html,**/*.css \
+                  -Dsonar.exclusions=**/node_modules/**,**/*.spec.ts \
+                  -Dsonar.javascript.lcov.reportPaths=$FRONTEND_DIR/coverage/lcov.info
+            """
 				}
 			}
 		}
