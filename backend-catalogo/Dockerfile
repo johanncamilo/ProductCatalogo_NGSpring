@@ -10,8 +10,9 @@ RUN mvn -q -B -DskipTests package
 FROM eclipse-temurin:21-jre
 WORKDIR /app
 ENV JAVA_OPTS=""
-ENV SPRING_DATASOURCE_URL=jdbc:h2:file:/data/catalogo;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+ENV SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/db_catalogo_ci
+ENV SPRING_DATASOURCE_USERNAME=root
+ENV SPRING_DATASOURCE_PASSWORD=12345678
 COPY --from=build /app/target/backend-catalogo-0.0.1-SNAPSHOT.jar /app/app.jar
-VOLUME ["/data"]
 EXPOSE 8080
 ENTRYPOINT ["sh","-c","java $JAVA_OPTS -jar /app/app.jar"]
