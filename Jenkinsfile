@@ -12,7 +12,7 @@ pipeline {
 
 	stages {
 
-		/* ------------------------- CHECKOUT ------------------------- */
+		/* ---------------------------- CHECKOUT ---------------------------- */
 		stage('Checkout') {
 			steps {
 				git branch: 'main',
@@ -21,22 +21,12 @@ pipeline {
 			}
 		}
 
-		/* ------------------------- BUILD BACKEND ------------------------- */
-		stage('Build Backend (Spring Boot)') {
+		/* ------------------------ BUILD + TEST (JAVA) --------------------- */
+		stage('Build & Test Backend') {
 			steps {
 				sh """
                     cd $BACKEND_DIR
-                    ./mvnw clean compile
-                """
-			}
-		}
-
-		/* ------------------------- TESTS + JACOCO ------------------------- */
-		stage('Run Tests + Coverage') {
-			steps {
-				sh """
-                    cd $BACKEND_DIR
-                    ./mvnw test
+                    ./mvnw clean verify
                 """
 			}
 			post {
@@ -46,7 +36,7 @@ pipeline {
 			}
 		}
 
-		/* ------------------------- PACKAGE ------------------------- */
+		/* -------------------------- PACKAGE (JAVA) ------------------------ */
 		stage('Package Backend') {
 			steps {
 				sh """
@@ -56,7 +46,7 @@ pipeline {
 			}
 		}
 
-		/* ------------------------- SONARQUBE (Java + Angular) ------------------------- */
+		/* -------------------------- SONARQUBE ----------------------------- */
 		stage('SonarQube Analysis') {
 			environment {
 				scannerHome = tool 'SonarScanner'
@@ -64,24 +54,24 @@ pipeline {
 			steps {
 				withSonarQubeEnv('SonarServer') {
 					sh """
-                ${scannerHome}/bin/sonar-scanner \
-                  -Dsonar.projectKey=ProductCatalogo \
-                  -Dsonar.projectName=ProductCatalogo \
-                  -Dsonar.sources=$BACKEND_DIR/src/main/java,$FRONTEND_DIR/src \
-                  -Dsonar.tests=$BACKEND_DIR/src/test/java \
-                  -Dsonar.java.binaries=$BACKEND_DIR/target/classes \
-                  -Dsonar.junit.reportPaths=$BACKEND_DIR/target/surefire-reports \
-                  -Dsonar.jacoco.reportPaths=$BACKEND_DIR/target/jacoco.exec \
-                  -Dsonar.coverage.jacoco.xmlReportPaths=$BACKEND_DIR/target/site/jacoco/jacoco.xml \
-                  -Dsonar.inclusions=**/*.java,**/*.ts,**/*.html,**/*.css \
-                  -Dsonar.exclusions=**/node_modules/**,**/*.spec.ts \
-                  -Dsonar.javascript.lcov.reportPaths=$FRONTEND_DIR/coverage/lcov.info
-            """
+                        ${scannerHome}/bin/sonar-scanner \
+                          -Dsonar.projectKey=ProductCatalogo \
+                          -Dsonar.projectName=ProductCatalogo \
+                          -Dsonar.sources=$BACKEND_DIR/src/main/java,$FRONTEND_DIR/src \
+                          -Dsonar.tests=$BACKEND_DIR/src/test/java \
+                          -Dsonar.java.binaries=$BACKEND_DIR/target/classes \
+                          -Dsonar.junit.reportPaths=$BACKEND_DIR/target/surefire-reports \
+                          -Dsonar.jacoco.reportPaths=$BACKEND_DIR/target/jacoco.exec \
+                          -Dsonar.coverage.jacoco.xmlReportPaths=$BACKEND_DIR/target/site/jacoco/jacoco.xml \
+                          -Dsonar.inclusions=**/*.java,**/*.ts,**/*.html,**/*.css \
+                          -Dsonar.exclusions=**/node_modules/**,**/*.spec.ts \
+                          -Dsonar.javascript.lcov.reportPaths=$FRONTEND_DIR/coverage/lcov.info
+                    """
 				}
 			}
 		}
 
-		/* ----------------------- SONAR QUALITY GATE ----------------------- */
+		/* ----------------------- QUALITY GATE ----------------------------- */
 		stage("Quality Gate") {
 			steps {
 				timeout(time: 10, unit: 'MINUTES') {
@@ -90,7 +80,7 @@ pipeline {
 			}
 		}
 
-		/* ------------------------- CODECOV ------------------------- */
+		/* -------------------------- CODECOV ------------------------------- */
 		stage('Upload Coverage to Codecov') {
 			steps {
 				withCredentials([string(credentialsId: 'codecov-token', variable: 'CODECOV_TOKEN')]) {
@@ -105,7 +95,7 @@ pipeline {
 			}
 		}
 
-		/* ------------------------- BUILD FRONTEND (Angular) ------------------------- */
+		/* ---------------------- BUILD FRONTEND (ANGULAR) ----------------- */
 		stage('Build Frontend (Angular)') {
 			agent {
 				docker {
@@ -122,7 +112,7 @@ pipeline {
 			}
 		}
 
-		/* ------------------------- DOCKER BUILD ------------------------- */
+		/* -------------------------- DOCKER BUILD -------------------------- */
 		stage('Build Docker Images') {
 			steps {
 				sh "docker build -t catalogo-backend $BACKEND_DIR"
@@ -130,7 +120,7 @@ pipeline {
 			}
 		}
 
-		/* ------------------------- DOCKER DEPLOY ------------------------- */
+		/* -------------------------- DOCKER DEPLOY ------------------------- */
 		stage('Deploy Local (docker compose)') {
 			steps {
 				sh """
