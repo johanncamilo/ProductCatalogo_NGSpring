@@ -48,9 +48,9 @@ services:
 
   jenkins:
     image: jenkins/jenkins:lts
-    platform: linux/amd64
     container_name: jenkins
     user: root
+    platform: linux/amd64
     ports:
       - "8081:8080"
     volumes:
@@ -58,15 +58,8 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
     networks:
       - appnet
-    command: >
-      bash -c "
-        apt-get update &&
-        apt-get install -y curl docker.io &&
-        curl -SL https://github.com/docker/compose/releases/latest/download/docker-compose-linux-x86_64 \
-          -o /usr/local/bin/docker-compose &&
-        chmod +x /usr/local/bin/docker-compose &&
-        exec /usr/local/bin/jenkins.sh
-      "
+    environment:
+      JAVA_OPTS: "-Xms512m -Xmx1024m"
   sonarqube:
     image: sonarqube:9.9.5-community
     platform: linux/amd64
