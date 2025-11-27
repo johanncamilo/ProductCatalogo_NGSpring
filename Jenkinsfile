@@ -29,19 +29,20 @@ pipeline {
 			}
 		}
 
-		stage('SonarQube') {
+		stage('SonarQube Analysis') {
 			environment {
-				scanner = tool 'SonarScanner'
+				scannerHome = tool 'SonarScanner'
 			}
 			steps {
-				withSonarQubeEnv('SonarServer') {
+				withCredentials([string(credentialsId: 'sonarqube-token', variable: 'SONAR_TOKEN')]) {
 					sh """
-                        ${scanner}/bin/sonar-scanner \
-                          -Dsonar.projectKey=ProductCatalogo \
-                          -Dsonar.host.url=http://sonarqube:9000 \
-                          -Dsonar.sources=$BACKEND/src/main/java,$FRONTEND/src \
-                          -Dsonar.java.binaries=$BACKEND/target/classes
-                    """
+                ${scannerHome}/bin/sonar-scanner \
+                  -Dsonar.projectKey=ProductCatalogo \
+                  -Dsonar.host.url=http://sonarqube:9000 \
+                  -Dsonar.login=$SONAR_TOKEN \
+                  -Dsonar.sources=$BACKEND_DIR/src/main/java,$FRONTEND_DIR/src \
+                  -Dsonar.java.binaries=$BACKEND_DIR/target/classes
+            """
 				}
 			}
 		}
