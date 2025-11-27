@@ -65,9 +65,9 @@ services:
         curl -fsSL https://deb.nodesource.com/setup_18.x | bash - &&
         apt-get install -y nodejs &&
         apt-get install -y docker.io &&
+        apt-get install -y docker-compose-plugin &&
         exec /usr/local/bin/jenkins.sh
       "
-
   sonarqube:
     image: sonarqube:9.9.5-community
     platform: linux/amd64
