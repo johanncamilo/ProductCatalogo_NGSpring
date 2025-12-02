@@ -19,6 +19,9 @@ pipeline {
 			}
 		}
 
+		/* ----------------------------------------------------
+		   BACKEND BUILD + TEST + COVERAGE
+		---------------------------------------------------- */
 		stage('Build Backend + Tests + Jacoco') {
 			steps {
 				dir("${BACKEND}") {
@@ -27,6 +30,9 @@ pipeline {
 			}
 		}
 
+		/* ----------------------------------------------------
+		   SONARQUBE ANALYSIS
+		---------------------------------------------------- */
 		stage('SonarQube Analysis') {
 			steps {
 				dir("${BACKEND}") {
@@ -60,36 +66,25 @@ pipeline {
 			}
 		}
 
-		/* ----------------------------------------------
-		   FRONTEND BUILD + TEST + COVERAGE
-		   Ahora se ejecuta directamente en Jenkins
-		   (Node ya viene instalado en tu imagen)
-		------------------------------------------------ */
+		/* ----------------------------------------------------
+		   FRONTEND BUILD + COVERAGE
+		---------------------------------------------------- */
 		stage('Build Frontend + Coverage') {
 			steps {
 				dir("${FRONTEND}") {
 					sh '''
-                        echo "Setting up Chrome for headless testing..."
                         export CHROME_BIN=/usr/bin/chromium
-
-                        echo "Installing dependencies..."
                         npm install
-
-                        echo "Running tests with code coverage (using ChromeHeadless)..."
                         ng test --watch=false --code-coverage --browsers=ChromeHeadless --no-progress || true
-
-                        echo "Building frontend..."
                         npm run build
-
-                        echo "Frontend build completed successfully!"
                     '''
 				}
 			}
 		}
 
-		/* ----------------------------------------------
+		/* ----------------------------------------------------
 		   UPLOAD COVERAGE TO CODECOV
-		------------------------------------------------ */
+		---------------------------------------------------- */
 		stage('Upload Coverage to Codecov') {
 			steps {
 				withCredentials([string(credentialsId: 'codecov-token', variable: 'CODECOV_TOKEN')]) {
@@ -104,25 +99,26 @@ pipeline {
 			}
 		}
 
-		/* ----------------------------------------------
-		   DOCKER BUILD + DEPLOY (desde Jenkins real)
-		------------------------------------------------ */
+		/* ----------------------------------------------------
+		   DOCKER BUILD + DEPLOY (USANDO 2 COMPOSE)
+		   docker-compose.yml + docker-compose.ci.yml
+		---------------------------------------------------- */
 		stage('Docker Build & Deploy') {
 			steps {
 				script {
 					echo "Building Docker images..."
-					sh '''
-                docker build -t catalogo-backend:latest backend-catalogo
-                docker build -t catalogo-frontend:latest frontend-catalogo
-            '''
+					sh """
+                        docker build -t catalogo-backend:latest backend-catalogo
+                        docker build -t catalogo-frontend:latest frontend-catalogo
+                    """
 
-					echo "Deploying services..."
-					sh '''
-                docker-compose down --remove-orphans || true
-                docker-compose up -d mysql sonarqube-db sonarqube backend-catalogo frontend-catalogo
-                sleep 10
-                docker-compose ps
-            '''
+					echo "Deploying CI services..."
+					sh """
+                        docker compose -f docker-compose.yml -f docker-compose.ci.yml down --remove-orphans || true
+                        docker compose -f docker-compose.yml -f docker-compose.ci.yml up -d --build mysql sonarqube-db sonarqube backend-catalogo frontend-catalogo
+                        sleep 10
+                        docker compose -f docker-compose.yml -f docker-compose.ci.yml ps
+                    """
 				}
 			}
 		}

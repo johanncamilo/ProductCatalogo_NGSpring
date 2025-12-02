@@ -1,0 +1,15 @@
+services:
+  mysql:
+    ports: [ ]
+
+  sonarqube:
+    ports: [ ]
+
+  backend-catalogo:
+    ports: [ ]
+
+  frontend-catalogo:
+    ports: [ ]
+
+  jenkins:
+    ports: [ ]
