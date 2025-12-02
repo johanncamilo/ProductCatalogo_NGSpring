@@ -69,11 +69,21 @@ pipeline {
 			steps {
 				dir("${FRONTEND}") {
 					sh '''
-                export CHROME_BIN=/usr/bin/chrome
-                npm install
-                npm run test -- --watch=false --code-coverage --browsers=ChromeHeadless
-                npm run build
-            '''
+                        echo "Setting up Chrome for headless testing..."
+                        export CHROME_BIN=/usr/bin/chromium
+                        export PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
+
+                        echo "Installing dependencies..."
+                        npm install
+
+                        echo "Running tests with code coverage..."
+                        npm run test -- --watch=false --code-coverage --browsers=ChromeHeadless
+
+                        echo "Building frontend..."
+                        npm run build
+
+                        echo "Frontend build completed successfully!"
+                    '''
 				}
 			}
 		}
