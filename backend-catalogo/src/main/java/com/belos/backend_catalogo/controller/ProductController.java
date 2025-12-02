@@ -1,17 +1,12 @@
 package com.belos.backend_catalogo.controller;
 
-import java.util.List;
-import java.util.Map;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
-
 import com.belos.backend_catalogo.model.Product;
 import com.belos.backend_catalogo.repository.ProductRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.Map;
 
 @RestController
 @CrossOrigin("*")
@@ -30,9 +25,6 @@ public class ProductController {
 
         return productRepository.findAll();
 
-        // return List.of(
-        // new Product(1L, "Laptop", "laptop muy bonito", 5000.0, 100),
-        // new Product(2L, "Mouse", "mouse muy bonito", 25d, 500));
     }
 
     @PostMapping("/api/products")
