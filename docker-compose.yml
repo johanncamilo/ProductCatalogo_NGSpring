@@ -2,13 +2,10 @@ services:
   mysql:
     image: mysql:8
     platform: linux/amd64
-    container_name: mysql
     restart: unless-stopped
     environment:
       MYSQL_ROOT_PASSWORD: 12345678
       MYSQL_DATABASE: db_catalogo_ci
-    ports:
-      - "3306:3306"
     volumes:
       - mysql_data:/var/lib/mysql
     networks:
@@ -23,7 +20,6 @@ services:
   sonarqube-db:
     image: postgres:13
     platform: linux/amd64
-    container_name: sonarqube-db
     restart: unless-stopped
     environment:
       POSTGRES_USER: sonar
@@ -43,7 +39,6 @@ services:
   sonarqube:
     image: sonarqube:9.9.5-community
     platform: linux/amd64
-    container_name: sonarqube
     restart: unless-stopped
     depends_on:
       sonarqube-db:
@@ -64,7 +59,6 @@ services:
 
   backend-catalogo:
     platform: linux/amd64
-    container_name: backend-catalogo
     restart: unless-stopped
     build:
       context: ./backend-catalogo
@@ -82,7 +76,6 @@ services:
 
   frontend-catalogo:
     platform: linux/amd64
-    container_name: frontend-catalogo
     restart: unless-stopped
     build:
       context: ./frontend-catalogo
@@ -98,12 +91,13 @@ services:
     build:
       context: ./jenkins
     platform: linux/amd64
-    container_name: jenkins
     user: root
     restart: unless-stopped
     ports:
       - "8081:8080"
       - "50000:50000"
+    environment:
+      JAVA_OPTS: "-Xmx2048m -Xms512m"
     volumes:
       - jenkins_home:/var/jenkins_home
       - /var/run/docker.sock:/var/run/docker.sock
