@@ -33,6 +33,7 @@ pipeline {
 					withSonarQubeEnv('SonarServer') {
 						withCredentials([string(credentialsId: 'sonarqube-token-productcatalogo',
 							variable: 'SONAR_TOKEN')]) {
+
 							sh '''
                                 mvn sonar:sonar \
                                   -Dsonar.projectKey=ProductCatalogo \
@@ -45,7 +46,7 @@ pipeline {
 						}
 					}
 				}
-				// Moved outside dir() block to avoid nesting issues
+
 				script {
 					echo "Waiting a few seconds for SonarQube to register the task..."
 					sleep 10
@@ -67,17 +68,14 @@ pipeline {
 		}
 
 		stage('Build Frontend + Coverage') {
-			agent {
-				docker {
-					image 'node:18'
-				}
-			}
 			steps {
 				dir("${FRONTEND}") {
 					sh '''
-                        npm install
-                        npm run test -- --watch=false --code-coverage
-                        npm run build
+                        docker run --rm \
+                            -v $PWD:/app \
+                            -w /app \
+                            node:18 \
+                            sh -c "npm install && npm run test -- --watch=false --code-coverage && npm run build"
                     '''
 				}
 			}
@@ -147,14 +145,12 @@ pipeline {
 
 			junit 'backend-catalogo/target/surefire-reports/*.xml'
 
-			// Use JaCoCo plugin
 			jacoco(
 				execPattern: 'backend-catalogo/target/jacoco.exec',
 				classPattern: 'backend-catalogo/target/classes',
 				sourcePattern: 'backend-catalogo/src/main/java'
 			)
 
-			// Publish HTML report
 			publishHTML([
 				allowMissing: false,
 				alwaysLinkToLastBuild: true,
