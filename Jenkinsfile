@@ -108,17 +108,18 @@ pipeline {
 				script {
 					echo "Building Docker images..."
 					sh """
-                        docker build -t catalogo-backend:latest backend-catalogo
-                        docker build -t catalogo-frontend:latest frontend-catalogo
-                    """
+				docker build -t catalogo-backend:latest backend-catalogo
+				docker build -t catalogo-frontend:latest frontend-catalogo
+			"""
 
 					echo "Deploying CI services..."
 					sh """
-                        docker-compose -f docker-compose.yml -f docker-compose.ci.yml down --remove-orphans || true
-                        docker-compose -f docker-compose.yml -f docker-compose.ci.yml up -d --build mysql sonarqube-db sonarqube backend-catalogo frontend-catalogo
-                        sleep 10
-                        docker-compose -f docker-compose.yml -f docker-compose.ci.yml ps
-                    """
+				docker-compose -f docker-compose.yml -f docker-compose.ci.yml up -d --build \
+                    mysql sonarqube-db sonarqube backend-catalogo frontend-catalogo
+
+				sleep 10
+				docker-compose -f docker-compose.yml -f docker-compose.ci.yml ps
+			"""
 				}
 			}
 		}
