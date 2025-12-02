@@ -74,16 +74,19 @@ pipeline {
 
 		stage('Docker Build & Deploy') {
 			steps {
+				script {
 
-				sh '''
-                    # Construcción de imágenes
-                    docker build -t catalogo-backend backend-catalogo
-                    docker build -t catalogo-frontend frontend-catalogo
+					sh """
+                echo '🔨 Building backend image...'
+                docker build -t catalogo-backend backend-catalogo
 
-                    # Levantar solo backend + frontend + mysql + sonarqube
-                    # (sin bajar jenkins!)
-                    docker compose up -d backend-catalogo frontend-catalogo mysql sonarqube
-                '''
+                echo '🔨 Building frontend image...'
+                docker build -t catalogo-frontend frontend-catalogo
+
+                echo '🚀 Deploying services...'
+                docker compose up -d backend-catalogo frontend-catalogo mysql sonarqube
+            """
+				}
 			}
 		}
 	}
