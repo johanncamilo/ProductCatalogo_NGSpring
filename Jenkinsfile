@@ -40,7 +40,7 @@ pipeline {
                                 mvn sonar:sonar \
                                   -Dsonar.projectKey=ProductCatalogo \
                                   -Dsonar.projectName=ProductCatalogo \
-                                  -Dsonar.host.url=$SONAR_HOST_URL \
+                                  -Dsonar.host.url=http://sonarqube:9000 \
                                   -Dsonar.login=$SONAR_TOKEN \
                                   -Dsonar.java.binaries=target/classes \
                                   -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
