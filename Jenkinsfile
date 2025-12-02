@@ -31,7 +31,7 @@ pipeline {
 			steps {
 				dir("${BACKEND}") {
 
-					withSonarQubeEnv('SonarQube') {
+					withSonarQubeEnv('SonarServer') {
 
 						withCredentials([string(credentialsId: 'sonarqube-token-productcatalogo',
 							variable: 'SONAR_TOKEN')]) {
