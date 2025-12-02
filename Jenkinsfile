@@ -2,56 +2,56 @@ pipeline {
 	agent any
 
 	tools {
-		maven "Default"
+		maven "Maven-3.9"
 	}
 
 	environment {
 		BACKEND = "backend-catalogo"
 		FRONTEND = "frontend-catalogo"
+		SCANNER_HOME = tool 'SonarScanner'
 	}
 
 	stages {
 
 		stage('Checkout') {
 			steps {
-				git branch: 'main',
-				credentialsId: 'github-credentials',
-				url: 'https://github.com/johanncamilo/ProductCatalogo_NGSpring.git'
+				checkout scm
 			}
 		}
 
-		stage('Build Backend') {
+		stage('Build Backend + Tests + Jacoco') {
 			steps {
-				sh """
-                    cd $BACKEND
-                    ./mvnw clean package -DskipTests
-                """
+				dir("${BACKEND}") {
+					sh 'mvn clean verify -DskipTests=false'
+				}
 			}
 		}
 
 		stage('SonarQube Analysis') {
-			environment {
-				SCANNER_HOME = tool 'SonarScanner'
-			}
 			steps {
-				withSonarQubeEnv('SonarServer') {
+				dir("${BACKEND}") {
 
-					withCredentials([string(credentialsId: 'sonarqube-token-productcatalogo', variable: 'SONAR_TOKEN')]) {
+					withSonarQubeEnv('SonarQube') {
 
-						sh '''#!/bin/bash
-                            "$SCANNER_HOME/bin/sonar-scanner" \
-                              -Dsonar.projectKey=ProductCatalogo \
-                              -Dsonar.host.url="$SONAR_HOST_URL" \
-                              -Dsonar.sources="backend-catalogo/src/main/java,frontend-catalogo/src" \
-                              -Dsonar.java.binaries="backend-catalogo/target/classes" \
-                              -Dsonar.token="$SONAR_TOKEN"
-                        '''
+						withCredentials([string(credentialsId: 'sonarqube-token-productcatalogo',
+							variable: 'SONAR_TOKEN')]) {
+
+							sh '''
+                                mvn sonar:sonar \
+                                  -Dsonar.projectKey=ProductCatalogo \
+                                  -Dsonar.projectName=ProductCatalogo \
+                                  -Dsonar.host.url=$SONAR_HOST_URL \
+                                  -Dsonar.login=$SONAR_TOKEN \
+                                  -Dsonar.java.binaries=target/classes \
+                                  -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
+                            '''
+						}
 					}
 				}
 			}
 		}
 
-		stage("Quality Gate") {
+		stage('Quality Gate') {
 			steps {
 				script {
 					timeout(time: 10, unit: 'MINUTES') {
@@ -62,37 +62,51 @@ pipeline {
 		}
 
 		stage('Build Frontend') {
-
+			agent {
+				docker {
+					image 'node:18'
+				}
+			}
 			steps {
-				sh """
-                    cd $FRONTEND
-                    npm install
-                    npm run build
-                """
+				dir("${FRONTEND}") {
+					sh '''
+                        npm install
+                        npm run build
+                    '''
+				}
 			}
 		}
 
 		stage('Docker Build & Deploy') {
 			steps {
-				script {
+				sh '''
+                    docker build -t catalogo-backend backend-catalogo
+                    docker build -t catalogo-frontend frontend-catalogo
 
-					sh """
-                echo '🔨 Building backend image...'
-                docker build -t catalogo-backend backend-catalogo
-
-                echo '🔨 Building frontend image...'
-                docker build -t catalogo-frontend frontend-catalogo
-
-                echo '🚀 Deploying services...'
-                docker compose up -d backend-catalogo frontend-catalogo mysql sonarqube
-            """
-				}
+                    docker compose up -d backend-catalogo frontend-catalogo mysql sonarqube
+                '''
 			}
 		}
 	}
 
 	post {
 		always {
+			echo "Archiving test results and coverage..."
+
+			// JUnit test results
+			junit 'backend-catalogo/target/surefire-reports/*.xml'
+
+			// Jacoco XML
+			recordCoverage(
+				tools: [[
+					parser: 'JACOCO',
+					pattern: 'backend-catalogo/target/site/jacoco/*.xml'
+				]]
+			)
+
+			// Build artifacts
+			archiveArtifacts artifacts: 'backend-catalogo/target/*.jar', fingerprint: true
+
 			cleanWs()
 		}
 	}
