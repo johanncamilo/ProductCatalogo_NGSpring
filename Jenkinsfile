@@ -31,25 +31,18 @@ pipeline {
 			steps {
 				dir("${BACKEND}") {
 					withSonarQubeEnv('SonarServer') {
-						withCredentials([string(credentialsId: 'sonarqube-token-productcatalogo',
-							variable: 'SONAR_TOKEN')]) {
-
+						withCredentials([string(credentialsId: 'sonarqube-token-productcatalogo', variable: 'SONAR_TOKEN')]) {
 							sh '''
                                 mvn sonar:sonar \
-                                  -Dsonar.projectKey=ProductCatalogo \
-                                  -Dsonar.projectName=ProductCatalogo \
-                                  -Dsonar.host.url=http://sonarqube:9000 \
-                                  -Dsonar.login=$SONAR_TOKEN \
-                                  -Dsonar.java.binaries=target/classes \
-                                  -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
+                                    -Dsonar.projectKey=ProductCatalogo \
+                                    -Dsonar.projectName=ProductCatalogo \
+                                    -Dsonar.host.url=http://sonarqube:9000 \
+                                    -Dsonar.login=$SONAR_TOKEN \
+                                    -Dsonar.java.binaries=target/classes \
+                                    -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
                             '''
 						}
 					}
-				}
-
-				script {
-					echo "Waiting a few seconds for SonarQube to register the task..."
-					sleep 10
 				}
 			}
 		}
@@ -57,45 +50,53 @@ pipeline {
 		stage('Quality Gate') {
 			steps {
 				script {
-					timeout(time: 15, unit: 'MINUTES') {
+					timeout(time: 10, unit: 'MINUTES') {
 						def qg = waitForQualityGate()
 						if (qg.status != 'OK') {
-							unstable(message: "Quality gate failed: ${qg.status}")
+							unstable("Quality Gate: ${qg.status}")
 						}
 					}
 				}
 			}
 		}
 
+		/* ----------------------------------------------
+		   FRONTEND BUILD + TEST + COVERAGE
+		   Ahora se ejecuta directamente en Jenkins
+		   (Node ya viene instalado en tu imagen)
+		------------------------------------------------ */
 		stage('Build Frontend + Coverage') {
 			steps {
 				dir("${FRONTEND}") {
 					sh '''
-                        docker run --rm \
-                            -v $PWD:/app \
-                            -w /app \
-                            node:18 \
-                            sh -c "npm install && npm run test -- --watch=false --code-coverage && npm run build"
+                        npm install
+                        npm run test -- --watch=false --code-coverage
+                        npm run build
                     '''
 				}
 			}
 		}
 
+		/* ----------------------------------------------
+		   UPLOAD COVERAGE TO CODECOV
+		------------------------------------------------ */
 		stage('Upload Coverage to Codecov') {
 			steps {
 				withCredentials([string(credentialsId: 'codecov-token', variable: 'CODECOV_TOKEN')]) {
 					sh """
                         curl -Os https://uploader.codecov.io/latest/linux/codecov
                         chmod +x codecov
-
                         ./codecov -t ${CODECOV_TOKEN} \
-                          -f backend-catalogo/target/site/jacoco/jacoco.xml \
-                          -f frontend-catalogo/coverage/lcov.info
+                            -f backend-catalogo/target/site/jacoco/jacoco.xml \
+                            -f frontend-catalogo/coverage/lcov.info
                     """
 				}
 			}
 		}
 
+		/* ----------------------------------------------
+		   DOCKER BUILD + DEPLOY (desde Jenkins real)
+		------------------------------------------------ */
 		stage('Docker Build & Deploy') {
 			steps {
 				script {
@@ -103,36 +104,14 @@ pipeline {
 					sh '''
                         docker build -t catalogo-backend:latest backend-catalogo
                         docker build -t catalogo-frontend:latest frontend-catalogo
-                        echo "Docker images built successfully"
                     '''
 
-					echo "Deploying containers..."
+					echo "Deploying services..."
 					sh '''
                         docker compose down --remove-orphans || true
                         docker compose up -d mysql sonarqube-db sonarqube backend-catalogo frontend-catalogo
                         sleep 10
-                        echo "Services deployed successfully"
                         docker compose ps
-                    '''
-				}
-			}
-		}
-
-		stage('Restart Quality Gate') {
-			steps {
-				script {
-					echo "Restarting SonarQube Quality Gate..."
-					sh '''
-                        sleep 5
-                        docker restart sonarqube || true
-                        for i in {1..30}; do
-                            if curl -sf http://sonarqube:9000/api/system/health > /dev/null 2>&1; then
-                                echo "SonarQube is healthy"
-                                break
-                            fi
-                            echo "Waiting for SonarQube to be ready... ($i/30)"
-                            sleep 2
-                        done
                     '''
 				}
 			}
@@ -141,7 +120,7 @@ pipeline {
 
 	post {
 		always {
-			echo "Archiving test results and coverage..."
+			echo "Archiving results..."
 
 			junit 'backend-catalogo/target/surefire-reports/*.xml'
 
@@ -153,11 +132,11 @@ pipeline {
 
 			publishHTML([
 				allowMissing: false,
-				alwaysLinkToLastBuild: true,
+				alwaysLinkToLastBuild: false,
 				keepAll: true,
 				reportDir: 'backend-catalogo/target/site/jacoco',
 				reportFiles: 'index.html',
-				reportName: 'JaCoCo Coverage Report'
+				reportName: 'Jacoco Report'
 			])
 
 			archiveArtifacts artifacts: 'backend-catalogo/target/*.jar', fingerprint: true
