@@ -114,10 +114,10 @@ pipeline {
 
 					echo "Deploying CI services..."
 					sh """
-                        docker compose -f docker-compose.yml -f docker-compose.ci.yml down --remove-orphans || true
-                        docker compose -f docker-compose.yml -f docker-compose.ci.yml up -d --build mysql sonarqube-db sonarqube backend-catalogo frontend-catalogo
+                        docker-compose -f docker-compose.yml -f docker-compose.ci.yml down --remove-orphans || true
+                        docker-compose -f docker-compose.yml -f docker-compose.ci.yml up -d --build mysql sonarqube-db sonarqube backend-catalogo frontend-catalogo
                         sleep 10
-                        docker compose -f docker-compose.yml -f docker-compose.ci.yml ps
+                        docker-compose -f docker-compose.yml -f docker-compose.ci.yml ps
                     """
 				}
 			}
