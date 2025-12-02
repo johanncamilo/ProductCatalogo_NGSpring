@@ -95,7 +95,8 @@ services:
       - appnet
 
   jenkins:
-    image: jenkins/jenkins:lts
+    build:
+      context: ./jenkins
     container_name: jenkins
     user: root
     platform: linux/amd64
