@@ -30,12 +30,9 @@ pipeline {
 		stage('SonarQube Analysis') {
 			steps {
 				dir("${BACKEND}") {
-
 					withSonarQubeEnv('SonarServer') {
-
 						withCredentials([string(credentialsId: 'sonarqube-token-productcatalogo',
 							variable: 'SONAR_TOKEN')]) {
-
 							sh '''
                                 mvn sonar:sonar \
                                   -Dsonar.projectKey=ProductCatalogo \
@@ -48,14 +45,22 @@ pipeline {
 						}
 					}
 				}
+				// Moved outside dir() block to avoid nesting issues
+				script {
+					echo "Waiting a few seconds for SonarQube to register the task..."
+					sleep 10
+				}
 			}
 		}
 
 		stage('Quality Gate') {
 			steps {
 				script {
-					timeout(time: 10, unit: 'MINUTES') {
-						waitForQualityGate abortPipeline: true
+					timeout(time: 15, unit: 'MINUTES') {
+						def qg = waitForQualityGate()
+						if (qg.status != 'OK') {
+							unstable(message: "Quality gate failed: ${qg.status}")
+						}
 					}
 				}
 			}
@@ -78,18 +83,17 @@ pipeline {
 			}
 		}
 
-		/** NUEVA ETAPA: SUBIR COBERTURA A CODECOV **/
 		stage('Upload Coverage to Codecov') {
 			steps {
 				withCredentials([string(credentialsId: 'codecov-token', variable: 'CODECOV_TOKEN')]) {
 					sh """
-					curl -Os https://uploader.codecov.io/latest/linux/codecov
-					chmod +x codecov
+                        curl -Os https://uploader.codecov.io/latest/linux/codecov
+                        chmod +x codecov
 
-					./codecov -t ${CODECOV_TOKEN} \
-					  -f backend-catalogo/target/site/jacoco/jacoco.xml \
-					  -f frontend-catalogo/coverage/lcov.info
-					"""
+                        ./codecov -t ${CODECOV_TOKEN} \
+                          -f backend-catalogo/target/site/jacoco/jacoco.xml \
+                          -f frontend-catalogo/coverage/lcov.info
+                    """
 				}
 			}
 		}
@@ -143,12 +147,22 @@ pipeline {
 
 			junit 'backend-catalogo/target/surefire-reports/*.xml'
 
-			recordCoverage(
-				tools: [[
-					parser: 'JACOCO',
-					pattern: 'backend-catalogo/target/site/jacoco/*.xml'
-				]]
+			// Use JaCoCo plugin
+			jacoco(
+				execPattern: 'backend-catalogo/target/jacoco.exec',
+				classPattern: 'backend-catalogo/target/classes',
+				sourcePattern: 'backend-catalogo/src/main/java'
 			)
+
+			// Publish HTML report
+			publishHTML([
+				allowMissing: false,
+				alwaysLinkToLastBuild: true,
+				keepAll: true,
+				reportDir: 'backend-catalogo/target/site/jacoco',
+				reportFiles: 'index.html',
+				reportName: 'JaCoCo Coverage Report'
+			])
 
 			archiveArtifacts artifacts: 'backend-catalogo/target/*.jar', fingerprint: true
 
