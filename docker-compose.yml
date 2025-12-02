@@ -3,6 +3,7 @@ services:
     image: mysql:8
     platform: linux/amd64
     container_name: mysql
+    restart: unless-stopped
     environment:
       MYSQL_ROOT_PASSWORD: 12345678
       MYSQL_DATABASE: db_catalogo_ci
@@ -12,20 +13,16 @@ services:
       - mysql_data:/var/lib/mysql
     networks:
       - appnet
-    healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
-      interval: 5s
-      timeout: 3s
-      retries: 10
-      start_period: 10s
 
   backend-catalogo:
     platform: linux/amd64
+    container_name: backend-catalogo
+    restart: unless-stopped
     build:
       context: ./backend-catalogo
     depends_on:
       mysql:
-        condition: service_healthy
+        condition: service_started
     environment:
       SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/db_catalogo_ci
       SPRING_DATASOURCE_USERNAME: root
@@ -37,20 +34,24 @@ services:
 
   frontend-catalogo:
     platform: linux/amd64
+    container_name: frontend-catalogo
+    restart: unless-stopped
     build:
       context: ./frontend-catalogo
     ports:
       - "8082:80"
     depends_on:
-      - backend-catalogo
+      backend-catalogo:
+        condition: service_started
     networks:
       - appnet
 
   jenkins:
     image: jenkins/jenkins:lts
     container_name: jenkins
-    user: root
     platform: linux/amd64
+    restart: unless-stopped
+    user: root
     ports:
       - "8081:8080"
     volumes:
@@ -58,20 +59,23 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
     networks:
       - appnet
-    environment:
-      JAVA_OPTS: "-Xms512m -Xmx1024m"
 
   sonarqube:
     image: sonarqube:9.9.5-community
     platform: linux/amd64
     container_name: sonarqube
+    restart: unless-stopped
     ports:
       - "9000:9000"
     networks:
       - appnet
     environment:
       SONAR_ES_BOOTSTRAP_CHECKS_DISABLE: "true"
-      ES_JAVA_OPTS: "-Xms512m -Xmx512m"
+      ES_JAVA_OPTS: "-Xms1g -Xmx2g"
+      SONARQUBE_WEB_JVM_OPTS: "-Djava.net.preferIPv4Stack=true"
+      SONAR_CE_JAVAOPTS: "-Xms512m -Xmx1g -Djava.net.preferIPv4Stack=true"
+    mem_limit: 3g
+    mem_reservation: 2g
     volumes:
       - sonarqube_data:/opt/sonarqube/data
       - sonarqube_extensions:/opt/sonarqube/extensions
