@@ -85,3 +85,5 @@ temp/
 
 # Otros
 coverage/
+/node_modules/
+/node_modules/
