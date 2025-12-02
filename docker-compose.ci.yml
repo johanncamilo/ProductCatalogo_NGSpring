@@ -1,20 +1,14 @@
 name: productcatalogo_ngspring
-
 services:
   mysql:
     ports: []
-
   sonarqube-db:
     ports: []
-
   sonarqube:
     ports: []
-
   backend-catalogo:
     ports: []
-
   frontend-catalogo:
     ports: []
-
   jenkins:
     ports: []

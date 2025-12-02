@@ -1,3 +1,5 @@
+name: productcatalogo_ngspring
+
 services:
   mysql:
     image: mysql:8
