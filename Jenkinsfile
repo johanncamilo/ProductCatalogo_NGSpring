@@ -69,10 +69,11 @@ pipeline {
 			steps {
 				dir("${FRONTEND}") {
 					sh '''
-                        npm install
-                        npm run test -- --watch=false --code-coverage
-                        npm run build
-                    '''
+                export CHROME_BIN=/usr/bin/chrome
+                npm install
+                npm run test -- --watch=false --code-coverage --browsers=ChromeHeadless
+                npm run build
+            '''
 				}
 			}
 		}
