@@ -112,17 +112,17 @@ pipeline {
 				script {
 					echo "Building Docker images..."
 					sh '''
-                        docker build -t catalogo-backend:latest backend-catalogo
-                        docker build -t catalogo-frontend:latest frontend-catalogo
-                    '''
+                docker build -t catalogo-backend:latest backend-catalogo
+                docker build -t catalogo-frontend:latest frontend-catalogo
+            '''
 
 					echo "Deploying services..."
 					sh '''
-                        docker compose down --remove-orphans || true
-                        docker compose up -d mysql sonarqube-db sonarqube backend-catalogo frontend-catalogo
-                        sleep 10
-                        docker compose ps
-                    '''
+                docker-compose down --remove-orphans || true
+                docker-compose up -d mysql sonarqube-db sonarqube backend-catalogo frontend-catalogo
+                sleep 10
+                docker-compose ps
+            '''
 				}
 			}
 		}
