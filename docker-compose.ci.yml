@@ -2,6 +2,9 @@ services:
   mysql:
     ports: [ ]
 
+  sonarqube-db:
+    ports: [ ]
+
   sonarqube:
     ports: [ ]
 

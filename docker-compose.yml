@@ -7,7 +7,7 @@ services:
       MYSQL_ROOT_PASSWORD: 12345678
       MYSQL_DATABASE: db_catalogo_ci
     ports:
-      - "3306:3306"
+      - "3307:3306"
     volumes:
       - mysql_data:/var/lib/mysql
     networks:
