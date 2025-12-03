@@ -86,15 +86,16 @@ pipeline {
 				withChecks("Codecov Upload") {
 					withCredentials([string(credentialsId: 'codecov-token', variable: 'CODECOV_TOKEN')]) {
 						sh """
+                    echo "=== LISTANDO COBERTURA FRONTEND ==="
+                    ls -R frontend-catalogo/coverage || true
+
                     curl -Os https://uploader.codecov.io/latest/linux/codecov
                     chmod +x codecov
 
                     ./codecov \
                         -t ${CODECOV_TOKEN} \
                         -f backend-catalogo/target/site/jacoco/jacoco.xml \
-                        -f frontend-catalogo/coverage/lcov.info \
-                        -r backend-catalogo/target/surefire-reports \
-                        -r frontend-catalogo/coverage/frontend-tests.xml \
+                        -f frontend-catalogo/coverage/**/lcov.info \
                         --verbose
                 """
 					}
