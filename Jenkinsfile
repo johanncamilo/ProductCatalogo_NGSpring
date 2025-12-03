@@ -1,6 +1,10 @@
 pipeline {
 	agent any
 
+	options {
+		githubChecks()
+	}
+
 	tools {
 		maven "Default"
 	}
