@@ -1,7 +1,7 @@
 # 🚀 PROYECTO: Catálogo e Inventario de Productos Tech  
 ### **Spring Boot 3 · Angular 18 · MySQL 8 · Docker · Jenkins CI/CD · Codecov**
 
-[![codecov](https://codecov.io/gh/johanncamilo/ProductCatalogo_NGSpring/branch/main/graph/badge.svg)](https://codecov.io/gh/johanncamilo/ProductCatalogo_NGSpring)
+[![codecov](https://codecov.io/gh/jsborbon/ProductCatalogo_NGSpring/branch/main/graph/badge.svg)](https://codecov.io/gh/jsborbon/ProductCatalogo_NGSpring)
 
 Este proyecto implementa un sistema completo de catálogo e inventario de productos tecnológicos utilizando un stack moderno: **Spring Boot** para el backend, **Angular** para el frontend y **MySQL** como motor de base de datos.  
 Incluye integración continua con **Jenkins** y análisis de cobertura con **Codecov**.
