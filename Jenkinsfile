@@ -73,7 +73,7 @@ pipeline {
 						sh '''
                             export CHROME_BIN=/usr/bin/chromium
                             npm install
-                            ng test --watch=false --code-coverage --browsers=ChromeHeadless --no-progress || true
+                            ng test --watch=false --code-coverage --browsers=ChromeHeadless --no-progress --reporters=junit,progress || true
                             npm run build
                         '''
 					}
@@ -86,12 +86,17 @@ pipeline {
 				withChecks("Codecov Upload") {
 					withCredentials([string(credentialsId: 'codecov-token', variable: 'CODECOV_TOKEN')]) {
 						sh """
-                            curl -Os https://uploader.codecov.io/latest/linux/codecov
-                            chmod +x codecov
-                            ./codecov -t ${CODECOV_TOKEN} \
-                                -f backend-catalogo/target/site/jacoco/jacoco.xml \
-                                -f frontend-catalogo/coverage/lcov.info
-                        """
+                    curl -Os https://uploader.codecov.io/latest/linux/codecov
+                    chmod +x codecov
+
+                    ./codecov \
+                        -t ${CODECOV_TOKEN} \
+                        -f backend-catalogo/target/site/jacoco/jacoco.xml \
+                        -f frontend-catalogo/coverage/lcov.info \
+                        -r backend-catalogo/target/surefire-reports \
+                        -r frontend-catalogo/coverage/frontend-tests.xml \
+                        --verbose
+                """
 					}
 				}
 			}

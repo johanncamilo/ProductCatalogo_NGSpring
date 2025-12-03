@@ -8,6 +8,7 @@ module.exports = function (config) {
     plugins: [
       require('karma-jasmine'),
       require('karma-chrome-launcher'),
+      require('karma-junit-reporter'),
       require('karma-jasmine-html-reporter'),
       require('karma-coverage'),
       require('@angular-devkit/build-angular/plugins/karma')
@@ -33,7 +34,7 @@ module.exports = function (config) {
         {type: 'lcovonly'}
       ]
     },
-    reporters: ['progress', 'kjhtml'],
+    reporters: ['progress', 'kjhtml', 'junit'],
     port: 9876,
     colors: true,
     logLevel: config.LOG_INFO,
@@ -62,7 +63,12 @@ module.exports = function (config) {
           '--disable-extensions'
         ]
       }
-    }
+    },
+    junitReporter: {
+      outputDir: 'coverage',
+      outputFile: 'frontend-tests.xml',
+      useBrowserName: false
+    },
   });
 };
 
