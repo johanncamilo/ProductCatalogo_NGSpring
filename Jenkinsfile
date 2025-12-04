@@ -13,6 +13,9 @@ pipeline {
 
 	stages {
 
+		/* ----------------------------------------------------
+		   CHECKOUT
+		---------------------------------------------------- */
 		stage('Checkout') {
 			steps {
 				withChecks("Checkout") {
@@ -21,6 +24,9 @@ pipeline {
 			}
 		}
 
+		/* ----------------------------------------------------
+		   BACKEND BUILD + TEST + COVERAGE
+		---------------------------------------------------- */
 		stage('Build Backend + Tests + Jacoco') {
 			steps {
 				withChecks("Backend Build & Tests") {
@@ -31,6 +37,9 @@ pipeline {
 			}
 		}
 
+		/* ----------------------------------------------------
+		   SONARQUBE ANALYSIS
+		---------------------------------------------------- */
 		stage('SonarQube Analysis') {
 			steps {
 				withChecks("SonarQube Analysis") {
@@ -53,19 +62,27 @@ pipeline {
 			}
 		}
 
+		/* ----------------------------------------------------
+		   QUALITY GATE
+		---------------------------------------------------- */
 		stage('Quality Gate') {
 			steps {
 				withChecks("Quality Gate") {
 					script {
 						timeout(time: 10, unit: 'MINUTES') {
 							def qg = waitForQualityGate()
-							if (qg.status != 'OK') unstable("Quality Gate: ${qg.status}")
+							if (qg.status != 'OK') {
+								unstable("Quality Gate: ${qg.status}")
+							}
 						}
 					}
 				}
 			}
 		}
 
+		/* ----------------------------------------------------
+		   FRONTEND BUILD + COVERAGE (KARMA)
+		---------------------------------------------------- */
 		stage('Build Frontend + Coverage') {
 			steps {
 				withChecks("Frontend Build & Tests") {
@@ -81,6 +98,9 @@ pipeline {
 			}
 		}
 
+		/* ----------------------------------------------------
+		   CODECOV UPLOAD
+		---------------------------------------------------- */
 		stage('Upload Coverage to Codecov') {
 			steps {
 				withChecks("Codecov Upload") {
@@ -90,24 +110,26 @@ pipeline {
                             chmod +x codecov
                             ./codecov -t ${CODECOV_TOKEN} \
                                 -f backend-catalogo/target/site/jacoco/jacoco.xml \
-                                -f frontend-catalogo/coverage/lcov.info
+                                -f frontend-catalogo/coverage/lcov.info \
+                                --verbose
                         """
 					}
 				}
 			}
 		}
 
+		/* ----------------------------------------------------
+		   DOCKER BUILD & DEPLOY
+		---------------------------------------------------- */
 		stage('Docker Build & Deploy') {
 			steps {
 				withChecks("Docker Build & Deploy") {
 					script {
-						echo "Building Docker images..."
 						sh """
                             docker build -t catalogo-backend:latest backend-catalogo
                             docker build -t catalogo-frontend:latest frontend-catalogo
                         """
 
-						echo "Deploying CI services..."
 						sh """
                             docker-compose -f docker-compose.yml -f docker-compose.ci.yml up -d --build \
                                 mysql sonarqube-db sonarqube backend-catalogo frontend-catalogo
@@ -121,30 +143,51 @@ pipeline {
 		}
 	}
 
+	/* -------------------------------------------------------
+	   POST BLOCK PROTEGIDO (NO marca FAILURE)
+	------------------------------------------------------- */
 	post {
 		always {
+
 			echo "Archiving results..."
 
-			junit 'backend-catalogo/target/surefire-reports/*.xml'
+			// JUNIT
+			catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+				junit 'backend-catalogo/target/surefire-reports/*.xml'
+			}
 
-			jacoco(
-				execPattern: 'backend-catalogo/target/jacoco.exec',
-				classPattern: 'backend-catalogo/target/classes',
-				sourcePattern: 'backend-catalogo/src/main/java'
-			)
+			// JACOCO
+			catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+				jacoco(
+					execPattern: 'backend-catalogo/target/jacoco.exec',
+					classPattern: 'backend-catalogo/target/classes',
+					sourcePattern: 'backend-catalogo/src/main/java'
+				)
+			}
 
-			publishHTML([
-				allowMissing: false,
-				alwaysLinkToLastBuild: false,
-				keepAll: true,
-				reportDir: 'backend-catalogo/target/site/jacoco',
-				reportFiles: 'index.html',
-				reportName: 'Jacoco Report'
-			])
+			// HTML REPORT
+			catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+				publishHTML([
+					allowMissing: true,
+					alwaysLinkToLastBuild: false,
+					keepAll: true,
+					reportDir: 'backend-catalogo/target/site/jacoco',
+					reportFiles: 'index.html',
+					reportName: 'Jacoco Report'
+				])
+			}
 
-			archiveArtifacts artifacts: 'backend-catalogo/target/*.jar', fingerprint: true
+			// ARTIFACTS
+			catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+				archiveArtifacts artifacts: 'backend-catalogo/target/*.jar', fingerprint: true
+			}
 
-			cleanWs()
+			// CLEAN WORKSPACE
+			catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+				cleanWs()
+			}
+
+			echo "Post actions completed."
 		}
 	}
 }
