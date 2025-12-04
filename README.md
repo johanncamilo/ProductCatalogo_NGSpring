@@ -277,8 +277,7 @@ INSERT INTO products (name, description, price, quantity) VALUES
 ('Laptop Lenovo ThinkPad E15', 'Intel i5 12th Gen, 16GB RAM, SSD 512GB', 799.00, 10),
 ('Mouse Logitech MX Master 3S', 'Bluetooth, DPI ajustable', 119.99, 25),
 ('Monitor LG UltraWide 34"', 'WFHD 34 pulgadas IPS', 349.00, 5),
-('Audífonos Sony WH-1000XM5', 'Noise Cancelling', 399.99, 8),
-('Teclado Keychron K8 Pro', 'Switch Brown, Wireless', 139.50, 12);
+('Audífonos Sony WH-1000XM5', 'Noise Cancelling', 399.99, 8)
 ```
 
 ------------------------------------------------------------------------
